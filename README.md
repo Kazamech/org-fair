@@ -1,3 +1,5 @@
+Live site: https://kazamech.github.io/org-fair/
+
 #EXPLANATION
 
 E1:I’d change only the source class that config.dart picks and the --dart-define values. The screens, repository, FairEvent model and tiles stay the same, because they only use the EventSource interface.
