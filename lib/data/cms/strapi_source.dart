@@ -30,24 +30,25 @@ class StrapiEventSource implements EventSource {
   @override
   String get name => 'Strapi';
 
-  @override
+   @override
   Future<List<FairEvent>> fetchEvents() async {
-    // TODO 2 (Strapi): Build the request.
-    //   URL:     $baseUrl/api/fair-events
-    //   Query:   sort=startsAt:asc and pagination[pageSize]=100
-    //            (use Uri.parse(...).replace(queryParameters: {...}))
-    //   Headers: 'Authorization': 'Bearer $token', only when token is not empty
-    final uri = Uri.parse(baseUrl);
-    final headers = <String, String>{};
-    // EXPLAIN E3: Open one of the other two CMS files and compare. Which
-    // lines differ, and which are the same? Why is the parsing the part
-    // that changes most from one CMS to another?
+    final uri = Uri.parse('$baseUrl/api/fair-events').replace(
+      queryParameters: {'sort': 'startsAt:asc', 'pagination[pageSize]': '100'},
+    );
+    final headers = {if (token.isNotEmpty) 'Authorization': 'Bearer $token'};
     final json = await getJson(client, uri, cms: name, headers: headers);
-
-    // TODO 3 (Strapi): Turn the JSON into a List<FairEvent>.
-    //   The list is in json['data']. For each item use documentId as the id.
-    //   description can be null and cancelled can be null: use ?? '' and ?? false.
-    //   startsAt is a String: DateTime.parse(...)
-    return const [];
+    final items = (json as Map<String, dynamic>)['data'] as List<dynamic>;
+    return [
+      for (final item in items.cast<Map<String, dynamic>>())
+        FairEvent(
+          id: item['documentId'] as String,
+          orgId: item['orgId'] as String,
+          title: item['title'] as String,
+          startsAt: DateTime.parse(item['startsAt'] as String),
+          venue: item['venue'] as String,
+          description: item['description'] as String? ?? '',
+          cancelled: item['cancelled'] as bool? ?? false,
+        ),
+    ];
   }
 }
